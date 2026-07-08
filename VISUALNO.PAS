@@ -37,7 +37,6 @@ begin
 
      Window(x1, y1, x2, y2);
 
-
      PosX := (WinWidth - Length(str)) div 2 + 1;
      PosY := (WinHeight) div 2;
 
@@ -52,22 +51,27 @@ end;
 procedure Error(e,line:Integer);
 var
    linestr:string;
+   FullMessage:string;
 begin
      clrscr;
-
      DrawBox(15, 7, 65, 17);
-
      Str(line,linestr);
-
      TextColor(Red);
+     
      if e = 1 then
-          SetText(16, 8, 64, 16, 'HATA at line '+ linestr +': character name is too long!')
+     begin
+          FullMessage := Concat('HATA at line ', linestr, ': name too long!');
+          SetText(16, 8, 64, 16, FullMessage);
+     end
      else if e = 2 then
-          SetText(16,8,64,16, 'HATA at line '+ linestr +': dialogue string is too long')
+     begin
+          FullMessage := Concat('HATA at line ', linestr, ': text too long!');
+          SetText(16, 8, 64, 16, FullMessage);
+     end
      else
           SetText(16, 8, 64, 16, 'HATA: unknown error!');
-     TextColor(White);
 
+     TextColor(White);
      readln;
      Halt;
 end;
@@ -78,18 +82,14 @@ var
 begin
      NameLength := Length(name);
 
+     Window(1, 1, 80, 25);
+
      GotoXY(1, 17);
-     Write(#201);
-     for I:= 0 to 2 do
-     begin
-          write(#205);
-     end;
+     Write(#204); {normali 201}
+     for I:= 0 to 2 do write(#205);
      write('[ ',name,' ]');
-     for I:=0 to (70 - NameLength) do
-     begin
-          write(#205);
-     end;
-     write(#187);
+     for I:=0 to (70 - NameLength) do write(#205);
+     write(#185); {normali 187}
 
      for I:= 0 to 5 do
      begin
@@ -99,13 +99,11 @@ begin
 
      GotoXY(1, 24);
      write(#200);
-     for I:=1 to 78 do
-     begin
-          write(#205);
-     end;
+     for I:=1 to 78 do write(#205);
      write(#188);
 
      Window(7, 19, 73, 23);
+     clrscr;
      GotoXY(1, 1);
 
      for I:=1 to Length(str) do
@@ -123,8 +121,6 @@ var
    name,text:string;
    currentline:Integer;
 begin
-     clrscr;
-
      currentline := 0;
      Assign(f, filename);
      Reset(f);
@@ -132,7 +128,7 @@ begin
      while not EOF(f) do
      begin
           readln(f, name);
-          currentline := currentline +1;
+          currentline := currentline + 1;
 
           while (name = '') and (not EOF(f)) do
           begin
@@ -142,15 +138,13 @@ begin
           if not EOF(f) then
           begin
                readln(f, text);
-               currentline := currentline +1;
-               clrscr;
+               currentline := currentline + 1;
+
                if Length(name) > 20 then Error(1, currentline)
-               else if Length(text) > 255 then Error(2, currentline)
+               else if Length(text) > 240 then Error(2, currentline);
           end;
      end;
-
      Close(f);
-
 end;
 
 var
@@ -159,9 +153,14 @@ var
 begin
      clrscr;
 
-     writeln('senaryo dosyasçnç girin (.txt ile birlikte)');
+     writeln('senaryo dosyasini girin (.txt ile birlikte)');
      readln(filename);
+     if filename = '' then Error(0,0);
      Check(filename);
+
+     clrscr;
+     DrawBox(1, 1, 80, 17);
+     SetText(2, 2, 79, 15, '[ gorsellerin yerleri burda olcak ]');
 
      Assign(f, filename);
      Reset(f);
@@ -177,9 +176,8 @@ begin
           if not EOF(f) then
           begin
                readln(f, text);
-               clrscr;
+               
                DrawTextBox(text, name);
-
                while KeyPressed do
                begin
                     ReadKey;
@@ -191,6 +189,6 @@ begin
 
      Close(f);
      clrscr;
-     SetText(1, 1, 80, 25, '--- OYUN BITI ---');
+     SetText(1, 1, 80, 25, '--- OYUN BITTI ---');
      readln;
 end.
