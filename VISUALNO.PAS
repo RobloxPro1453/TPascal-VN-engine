@@ -125,7 +125,7 @@ var
 begin
      clrscr;
 
-     currentline := 1;
+     currentline := 0;
      Assign(f, filename);
      Reset(f);
 
@@ -179,6 +179,12 @@ begin
                readln(f, text);
                clrscr;
                DrawTextBox(text, name);
+
+               while KeyPressed do
+               begin
+                    ReadKey;
+               end;
+
                readln;
           end;
      end;
