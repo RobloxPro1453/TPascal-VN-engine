@@ -115,12 +115,12 @@ begin
 end;
 
 var
-   f: Text;
-   metin, name, filename: string;
+   f:Text;
+   name,text, filename: string;
 begin
      clrscr;
 
-     writeln('senaryo dosyasinin ismini girin (.txt ile)');
+     writeln('senaryo dosyasçnç girin (.txt ile birlikte)');
      readln(filename);
 
      Assign(f, filename);
@@ -129,13 +129,22 @@ begin
      while not EOF(f) do
      begin
           readln(f, name);
-          readln(f, metin);
-          clrscr;
-          DrawTextBox(metin,name);
-          readln;
+
+          while (name = '') and (not EOF(f)) do
+          begin
+               readln(f, name);
+          end;
+          if not EOF(f) then
+          begin
+               readln(f, text);
+               clrscr;
+               DrawTextBox(text, name);
+               readln;
+          end;
      end;
 
      Close(f);
-
-     repeat until KeyPressed;
+     clrscr;
+     SetText(1, 1, 80, 25, '--- OYUN BITI ---');
+     readln;
 end.
