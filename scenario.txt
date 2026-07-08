@@ -4,6 +4,12 @@ bu bir metin (test isim' in metni)
 isim2
 bu da isim2'nin konusmasi
 
+@CHOICE:3
+sopayi al.
+bandaki al.
+ekmegi al.
+
+
 isim3
 isim3de sssssssssssssssssss
 

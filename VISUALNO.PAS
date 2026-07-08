@@ -2,6 +2,10 @@ Program HelloWorld;
 uses crt;
 
 const TEXT_DELAY = 15;
+      CHOICE_OFFSET = 3;
+
+type
+   MenuArray = array[1..5] of string;
 
 procedure DrawBox(x1,y1,x2,y2: Integer);
 var
@@ -38,9 +42,10 @@ begin
      Window(x1, y1, x2, y2);
 
      PosX := (WinWidth - Length(str)) div 2 + 1;
-     PosY := (WinHeight) div 2;
+     PosY := (WinHeight div 2) + 1;
 
      if PosX < 1 then PosX := 1;
+     if PosY < 1 then PosY := 1;
 
      GotoXY(PosX, PosY);
      write(str);
@@ -57,7 +62,7 @@ begin
      DrawBox(15, 7, 65, 17);
      Str(line,linestr);
      TextColor(Red);
-     
+
      if e = 1 then
      begin
           FullMessage := Concat('HATA at line ', linestr, ': name too long!');
@@ -66,6 +71,11 @@ begin
      else if e = 2 then
      begin
           FullMessage := Concat('HATA at line ', linestr, ': text too long!');
+          SetText(16, 8, 64, 16, FullMessage);
+     end
+     else if e = 3 then
+     begin
+          FullMessage := Concat('HATA at line ', linestr, ': choice prefix error!');
           SetText(16, 8, 64, 16, FullMessage);
      end
      else
@@ -85,11 +95,11 @@ begin
      Window(1, 1, 80, 25);
 
      GotoXY(1, 17);
-     Write(#204); {normali 201}
+     Write(#204);
      for I:= 0 to 2 do write(#205);
      write('[ ',name,' ]');
      for I:=0 to (70 - NameLength) do write(#205);
-     write(#185); {normali 187}
+     write(#185);
 
      for I:= 0 to 5 do
      begin
@@ -118,8 +128,8 @@ end;
 procedure Check(filename:string);
 var
    f:Text;
-   name,text:string;
-   currentline:Integer;
+   name,text,choicecountstr:string;
+   currentline,choicecount,errcode,I:Integer;
 begin
      currentline := 0;
      Assign(f, filename);
@@ -135,21 +145,77 @@ begin
                readln(f, name);
                currentline := currentline + 1;
           end;
-          if not EOF(f) then
+
+          if (Pos('@',name)=0) and (not EOF(f)) then
           begin
                readln(f, text);
                currentline := currentline + 1;
 
                if Length(name) > 20 then Error(1, currentline)
                else if Length(text) > 240 then Error(2, currentline);
+          end
+          else if (Pos('@CHOICE',name)=1) and (not EOF(f)) then
+          begin
+               choicecountstr := Copy(name,9,5);
+               Val(choicecountstr,choicecount,errcode);
+               if errcode <> 0 then Error(3, currentline)
+               else
+               begin
+                    for I:= 1 to choicecount do
+                    begin
+                         readln(f, text);
+                         currentline := currentline + 1;
+                    end;
+               end;
           end;
      end;
      Close(f);
 end;
 
+procedure ClearGraphs;
+begin
+     Window(2, 2, 79, 16);
+     clrscr;
+     Window(1, 1, 80, 25);
+end;
+
+procedure DrawChoiceMenu(choicelist:MenuArray; choicecount, secili:Integer);
+var
+   I, y1,y2:Integer;
+begin
+     Window(2, 2, 79, 16);
+     clrscr;
+     Window(1, 1, 80, 25);
+
+     y1 := 3;
+     y2 := 5;
+
+     for I:=1 to choicecount do begin
+          if I = secili then
+          begin
+               TextColor(Cyan);
+               DrawBox(20,y1,60,y2);
+               SetText(21, y1 + 1, 59, y2 - 1, Concat('> ', choicelist[I], ' <'));
+          end
+          else
+          begin
+               TextColor(White);
+               DrawBox(20,y1,60,y2);
+               SetText(21, y1 + 1, 59, y2 - 1, choicelist[I]);
+          end;
+
+          y1 := y1 + CHOICE_OFFSET;
+          y2 := y2 + CHOICE_OFFSET;
+     end;
+     TextColor(White);
+end;
+
 var
    f:Text;
-   name,text, filename: string;
+   name,text, filename, choicecountstr, FullMessage: string;
+   choicecount, errcode, I, seciliindex :Integer;
+   secenekler: MenuArray;
+   tus: Char;
 begin
      clrscr;
 
@@ -173,17 +239,53 @@ begin
           begin
                readln(f, name);
           end;
-          if not EOF(f) then
+
+          if (Pos('@',name)=0) and (not EOF(f)) then
           begin
                readln(f, text);
-               
                DrawTextBox(text, name);
-               while KeyPressed do
-               begin
-                    ReadKey;
-               end;
 
+               while KeyPressed do begin ReadKey; end;
                readln;
+          end
+          else if (Pos('@CHOICE',name)=1) and (not EOF(f)) then
+          begin
+               choicecountstr := Copy(name,9,5);
+               Val(choicecountstr,choicecount,errcode);
+               if errcode = 0 then
+               begin
+                    for I:= 1 to choicecount do
+                    begin
+                         readln(f, text);
+                         secenekler[I] := text;
+                    end;
+
+                    seciliindex := 1;
+
+                    repeat
+                         DrawChoiceMenu(secenekler, choicecount, seciliindex);
+                         tus := ReadKey;
+
+                         if tus = #0 then
+                         begin
+                              tus := ReadKey;
+                              if tus = #72 then
+                              begin
+                                   if seciliindex > 1 then seciliindex := seciliindex - 1;
+                              end
+                              else if tus = #80 then
+                              begin
+                                   if seciliindex < choicecount then seciliindex := seciliindex + 1;
+                              end;
+                         end;
+                     until tus = #13;
+
+                    Str(seciliindex, choicecountstr);
+                    DrawTextBox(Concat(choicecountstr, '. secenegi sectin.'), 'Sistem');
+                    while KeyPressed do begin ReadKey; end;
+                    readln;
+                    ClearGraphs;
+               end;
           end;
      end;
 
