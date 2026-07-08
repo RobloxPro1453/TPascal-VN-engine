@@ -204,14 +204,25 @@ begin
      TextColor(White);
 end;
 
+function Trim(str:string):string;
+begin
+     while (Length(str)> 0) and (str[Length(str)]=' ') do
+     begin
+          Delete(str,Length(str),1);
+     end;
+
+     Trim :=str;
+end;
+
 var
    f:Text;
-   name,text, filename, choicecountstr, labelstr: string;
+   name,text, filename, choicecountstr, labelstr, envanter, itemname: string;
    choicecount, errcode, I, seciliindex, targetlabel :Integer;
    secenekler: MenuArray;
    tus: Char;
 begin
      clrscr;
+     envanter := '';
      writeln('senaryo dosyasini girin (.txt ile birlikte)');
      readln(filename);
      if filename = '' then Error(0,0);
@@ -219,7 +230,7 @@ begin
 
      clrscr;
      DrawBox(1, 1, 80, 17);
-     SetText(2, 2, 79, 15, '[ gorsellerin yerleri burda olcak ]');
+     SetText(2, 2, 79, 15, '[ gorsellerin yerleri (usenmezsem 13h modunda eklerim) burda olcak ]');
 
      Assign(f, filename);
      Reset(f);
@@ -240,7 +251,6 @@ begin
                while KeyPressed do begin ReadKey; end;
                readln;
           end
-          
           else if (Pos('@CHOICE',name)=1) and (not EOF(f)) then
           begin
                choicecountstr := Copy(name,9,2);
@@ -273,27 +283,51 @@ begin
                      until tus = #13;
 
                     ClearGraphs;
-               
+
                     for I := 1 to (seciliindex - 1) do
                     begin
                          readln(f, labelstr);
                     end;
                     readln(f, name);
                end;
+          end
+          else if (Pos('@GIVE',name)=1) and (not EOF(f)) then
+          begin
+               itemname := Copy(name,6,20);
+               itemname := Trim(itemname);
+               envanter := envanter + ';' + itemname;
+               DrawTextBox(Concat(itemname, ' aldin!!!'),'');
+               while KeyPressed do begin ReadKey; end;
+               readln;
+          end
+          else if (Pos('@DROP',name)=1) and (not EOF(f)) then
+          begin
+               itemname := Copy(name,6,20);
+               itemname := Trim(itemname);
+               I := Pos(itemname,envanter);
+               if I <> 0 then
+               begin
+                    Delete(envanter, I-1, Length(itemname)+1);
+                    DrawTextBox(Concat(itemname +' envanterden atildi!!!'),'');
+                    while KeyPressed do begin ReadKey; end;
+                    readln;
+               end;
+          end
+          else if (Pos('@HAS',name)=1) and (not EOF(f)) then
+          begin
+               {not yet twin ....}
           end;
-
-          if (Pos('@LABEL',name)=1) then
+          else if (Pos('@LABEL',name)=1) then
           begin
                labelstr:=Copy(name,8,4);
           end
-          
           else if (Pos('@GOTO',name)=1) then
           begin
                labelstr := Copy(name,7,4);
-               
+
                Reset(f);
                targetlabel := 0;
-               
+
                while (not EOF(f)) and (targetlabel = 0) do
                begin
                     readln(f, text);
@@ -302,7 +336,7 @@ begin
                          targetlabel := 1;
                     end;
                end;
-               
+
                if targetlabel = 0 then
                begin
                     Close(f);

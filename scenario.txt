@@ -14,13 +14,21 @@ leybil 3 e gec
 @LABEL 0002
 isi4
 merhaba dunya, su an label 2'deyiz.
+@GIVE elma
+isi4
+merhaba babapro
+isi4
+elmayi birakcam
+@DROP elma
 @GOTO 0004
 
 @LABEL 0003
 isim3
 isim3de sssssssssssssssssss
+@GIVE yumurta
 @GOTO 0004
 
 @LABEL 0004
 kisaisim
+
 Hikaye bitti, tebrikler!
