@@ -1,4 +1,4 @@
-Program HelloWorld;
+Program VisualNovel;
 uses crt;
 
 const TEXT_DELAY = 15;
@@ -13,7 +13,6 @@ var
    InnerWidth:Integer;
 begin
      InnerWidth := (x2 - x1) - 1;
-
      GotoXY(x1,y1);
      write(#201);
      for I:=1 to InnerWidth do write(#205);
@@ -38,7 +37,6 @@ var
 begin
      WinWidth := (x2 - x1) + 1;
      WinHeight := (y2 - y1) + 1;
-
      Window(x1, y1, x2, y2);
 
      PosX := (WinWidth - Length(str)) div 2 + 1;
@@ -49,7 +47,6 @@ begin
 
      GotoXY(PosX, PosY);
      write(str);
-
      Window(1,1,80,25);
 end;
 
@@ -91,9 +88,7 @@ var
    NameLength, I: Integer;
 begin
      NameLength := Length(name);
-
      Window(1, 1, 80, 25);
-
      GotoXY(1, 17);
      Write(#204);
      for I:= 0 to 2 do write(#205);
@@ -121,7 +116,6 @@ begin
           write(str[I]);
           Delay(TEXT_DELAY);
      end;
-
      Window(1, 1, 80, 25);
 end;
 
@@ -156,7 +150,7 @@ begin
           end
           else if (Pos('@CHOICE',name)=1) and (not EOF(f)) then
           begin
-               choicecountstr := Copy(name,9,5);
+               choicecountstr := Copy(name,9,2);
                Val(choicecountstr,choicecount,errcode);
                if errcode <> 0 then Error(3, currentline)
                else
@@ -212,13 +206,12 @@ end;
 
 var
    f:Text;
-   name,text, filename, choicecountstr, FullMessage: string;
-   choicecount, errcode, I, seciliindex :Integer;
+   name,text, filename, choicecountstr, labelstr: string;
+   choicecount, errcode, I, seciliindex, targetlabel :Integer;
    secenekler: MenuArray;
    tus: Char;
 begin
      clrscr;
-
      writeln('senaryo dosyasini girin (.txt ile birlikte)');
      readln(filename);
      if filename = '' then Error(0,0);
@@ -244,13 +237,13 @@ begin
           begin
                readln(f, text);
                DrawTextBox(text, name);
-
                while KeyPressed do begin ReadKey; end;
                readln;
           end
+          
           else if (Pos('@CHOICE',name)=1) and (not EOF(f)) then
           begin
-               choicecountstr := Copy(name,9,5);
+               choicecountstr := Copy(name,9,2);
                Val(choicecountstr,choicecount,errcode);
                if errcode = 0 then
                begin
@@ -261,7 +254,6 @@ begin
                     end;
 
                     seciliindex := 1;
-
                     repeat
                          DrawChoiceMenu(secenekler, choicecount, seciliindex);
                          tus := ReadKey;
@@ -280,11 +272,44 @@ begin
                          end;
                      until tus = #13;
 
-                    Str(seciliindex, choicecountstr);
-                    DrawTextBox(Concat(choicecountstr, '. secenegi sectin.'), 'Sistem');
-                    while KeyPressed do begin ReadKey; end;
-                    readln;
                     ClearGraphs;
+               
+                    for I := 1 to (seciliindex - 1) do
+                    begin
+                         readln(f, labelstr);
+                    end;
+                    readln(f, name);
+               end;
+          end;
+
+          if (Pos('@LABEL',name)=1) then
+          begin
+               labelstr:=Copy(name,8,4);
+          end
+          
+          else if (Pos('@GOTO',name)=1) then
+          begin
+               labelstr := Copy(name,7,4);
+               
+               Reset(f);
+               targetlabel := 0;
+               
+               while (not EOF(f)) and (targetlabel = 0) do
+               begin
+                    readln(f, text);
+                    if (Pos('@LABEL', text) = 1) and (Copy(text, 8, 4) = labelstr) then
+                    begin
+                         targetlabel := 1;
+                    end;
+               end;
+               
+               if targetlabel = 0 then
+               begin
+                    Close(f);
+                    clrscr;
+                    WriteLn('HATA: Gitmek istediginiz label bulunamadi: ', labelstr);
+                    readln;
+                    Halt;
                end;
           end;
      end;

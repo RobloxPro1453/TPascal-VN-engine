@@ -1,20 +1,26 @@
+@LABEL 0001
 test isim
 bu bir metin (test isim' in metni)
 
 isim2
 bu da isim2'nin konusmasi
 
-@CHOICE:3
-sopayi al.
-bandaki al.
-ekmegi al.
+@CHOICE 02
+leybil 2ye gec
+leybil 3 e gec
+@GOTO 0002
+@GOTO 0003
 
+@LABEL 0002
+isi4
+merhaba dunya, su an label 2'deyiz.
+@GOTO 0004
 
+@LABEL 0003
 isim3
 isim3de sssssssssssssssssss
+@GOTO 0004
 
-yirmiharftenuzunis
-bu hatavercek isim 20 den uzun --> artık vermicek
-
+@LABEL 0004
 kisaisim
-merhaba dunya
+Hikaye bitti, tebrikler!
