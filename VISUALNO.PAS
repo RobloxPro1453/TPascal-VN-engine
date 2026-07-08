@@ -49,17 +49,21 @@ begin
      Window(1,1,80,25);
 end;
 
-procedure Error(e:Integer);
+procedure Error(e,line:Integer);
+var
+   linestr:string;
 begin
      clrscr;
 
      DrawBox(15, 7, 65, 17);
 
+     Str(line,linestr);
+
      TextColor(Red);
      if e = 1 then
-          SetText(16, 8, 64, 16, 'HATA: character name is too long!')
+          SetText(16, 8, 64, 16, 'HATA at line '+ linestr +': character name is too long!')
      else if e = 2 then
-          SetText(16,8,64,16, 'HATA: dialogue string is too long')
+          SetText(16,8,64,16, 'HATA at line '+ linestr +': dialogue string is too long')
      else
           SetText(16, 8, 64, 16, 'HATA: unknown error!');
      TextColor(White);
@@ -73,7 +77,6 @@ var
    NameLength, I: Integer;
 begin
      NameLength := Length(name);
-     if NameLength > 30 then begin Error(1); end;
 
      GotoXY(1, 17);
      Write(#201);
@@ -114,6 +117,42 @@ begin
      Window(1, 1, 80, 25);
 end;
 
+procedure Check(filename:string);
+var
+   f:Text;
+   name,text:string;
+   currentline:Integer;
+begin
+     clrscr;
+
+     currentline := 1;
+     Assign(f, filename);
+     Reset(f);
+
+     while not EOF(f) do
+     begin
+          readln(f, name);
+          currentline := currentline +1;
+
+          while (name = '') and (not EOF(f)) do
+          begin
+               readln(f, name);
+               currentline := currentline + 1;
+          end;
+          if not EOF(f) then
+          begin
+               readln(f, text);
+               currentline := currentline +1;
+               clrscr;
+               if Length(name) > 20 then Error(1, currentline)
+               else if Length(text) > 255 then Error(2, currentline)
+          end;
+     end;
+
+     Close(f);
+
+end;
+
 var
    f:Text;
    name,text, filename: string;
@@ -122,6 +161,7 @@ begin
 
      writeln('senaryo dosyasçnç girin (.txt ile birlikte)');
      readln(filename);
+     Check(filename);
 
      Assign(f, filename);
      Reset(f);
