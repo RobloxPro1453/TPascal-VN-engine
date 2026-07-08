@@ -4,7 +4,8 @@ interface
 uses dos;
 
 procedure MouseInit;
-procedure MoçseShow;
+procedure MouseShow;
+procedure MouseHide;
 procedure GetMouse(var x,y,button:Integer);
 
 implementation
@@ -19,9 +20,17 @@ end;
 
 procedure MouseShow;
 var
-   Regs:REgisters;
+   Regs:Registers;
 begin
      Regs.AX := 1;
+     Intr($33,Regs);
+end;
+
+procedure MouseHide;
+var
+   Regs:Registers;
+begin
+     Regs.AX := 2;
      Intr($33,Regs);
 end;
 
