@@ -1,34 +1,51 @@
 @LABEL 0001
-test isim
-bu bir metin (test isim' in metni)
+Sistem
+VN
 
-isim2
-bu da isim2'nin konusmasi
+
+Karakter1
+boslukda calisdi
 
 @CHOICE 02
-leybil 2ye gec
-leybil 3 e gec
+Sola git ()Elma al)
+Saga git (Yumurta al)
 @GOTO 0002
 @GOTO 0003
 
 @LABEL 0002
-isi4
-merhaba dunya, su an label 2'deyiz.
-@GIVE elma
-isi4
-merhaba babapro
-isi4
-elmayi birakcam
-@DROP elma
+Karakter1
+Sol yoldasin Elma verildi
+@GIVE elma          
 @GOTO 0004
 
 @LABEL 0003
-isim3
-isim3de sssssssssssssssssss
-@GIVE yumurta
+Karakter1
+Sag yoldasin Yumurta verili
+@GIVE yumurta     
 @GOTO 0004
 
 @LABEL 0004
-kisaisim
+Sistem
+Simdi @HAS kontrol
 
-Hikaye bitti, tebrikler!
+@HAS elma 0005
+
+Sistem
+@HAS dogrulanmadi. yumurta var
+@DROP yumurta
+@GOTO 0006
+
+@LABEL 0005
+Sistem
+@HAS dogrulandi elma var
+@DROP elma
+
+@LABEL 0006
+Sistem
+Eşya DROP
+
+Karakter1
+we did it vro
+
+Sistem
+--- TEST TAMAMLANDI ---

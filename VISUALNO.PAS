@@ -157,8 +157,11 @@ begin
                begin
                     for I:= 1 to choicecount do
                     begin
-                         readln(f, text);
-                         currentline := currentline + 1;
+                         if not EOF(f) then
+                         begin
+                              readln(f, text);
+                              currentline := currentline + 1;
+                         end;
                     end;
                end;
           end;
@@ -210,14 +213,38 @@ begin
      begin
           Delete(str,Length(str),1);
      end;
+     Trim := str;
+end;
 
-     Trim :=str;
+procedure JumpToLabel(var filevar: Text; target: string);
+var
+   line: string;
+   found: Integer;
+begin
+     Reset(filevar);
+     found := 0;
+     while (not EOF(filevar)) and (found = 0) do
+     begin
+          readln(filevar, line);
+          if (Pos('@LABEL', line) = 1) and (Copy(line, 8, 4) = target) then
+          begin
+               found := 1;
+          end;
+     end;
+     if found = 0 then
+     begin
+          Close(filevar);
+          clrscr;
+          WriteLn('HATA: Gitmek istediginiz label bulunamadi: ', target);
+          readln;
+          Halt;
+     end;
 end;
 
 var
    f:Text;
    name,text, filename, choicecountstr, labelstr, envanter, itemname: string;
-   choicecount, errcode, I, seciliindex, targetlabel :Integer;
+   choicecount, errcode, I, seciliindex :Integer;
    secenekler: MenuArray;
    tus: Char;
 begin
@@ -259,8 +286,11 @@ begin
                begin
                     for I:= 1 to choicecount do
                     begin
-                         readln(f, text);
-                         secenekler[I] := text;
+                         if not EOF(f) then
+                         begin
+                              readln(f, text);
+                              secenekler[I] := text;
+                         end;
                     end;
 
                     seciliindex := 1;
@@ -286,9 +316,17 @@ begin
 
                     for I := 1 to (seciliindex - 1) do
                     begin
-                         readln(f, labelstr);
+                         if not EOF(f) then readln(f, labelstr);
                     end;
-                    readln(f, name);
+                    if not EOF(f) then
+                    begin
+                         readln(f,labelstr);
+                         if Pos('@GOTO', labelstr) = 1 then
+                         begin
+                              labelstr := Copy(labelstr,7,4);
+                              JumpToLabel(f,labelstr);
+                         end;
+                    end;
                end;
           end
           else if (Pos('@GIVE',name)=1) and (not EOF(f)) then
@@ -308,15 +346,26 @@ begin
                if I <> 0 then
                begin
                     Delete(envanter, I-1, Length(itemname)+1);
-                    DrawTextBox(Concat(itemname +' envanterden atildi!!!'),'');
+                    DrawTextBox(Concat(itemname, ' envanterden atildi!!!'),'');
                     while KeyPressed do begin ReadKey; end;
                     readln;
                end;
           end
           else if (Pos('@HAS',name)=1) and (not EOF(f)) then
           begin
-               {not yet twin ....}
-          end;
+               itemname := Copy(name,6,20);
+               itemname := Trim(itemname);
+               I := Pos(' ', itemname);
+               if I > 0 then
+               begin
+                    labelstr := Copy(itemname, I + 1, 4);
+                    itemname := Copy(itemname, 1, I - 1);
+                    if Pos(itemname, envanter) <> 0 then
+                    begin
+                         JumpToLabel(f, labelstr);
+                    end;
+               end;
+          end
           else if (Pos('@LABEL',name)=1) then
           begin
                labelstr:=Copy(name,8,4);
@@ -324,27 +373,7 @@ begin
           else if (Pos('@GOTO',name)=1) then
           begin
                labelstr := Copy(name,7,4);
-
-               Reset(f);
-               targetlabel := 0;
-
-               while (not EOF(f)) and (targetlabel = 0) do
-               begin
-                    readln(f, text);
-                    if (Pos('@LABEL', text) = 1) and (Copy(text, 8, 4) = labelstr) then
-                    begin
-                         targetlabel := 1;
-                    end;
-               end;
-
-               if targetlabel = 0 then
-               begin
-                    Close(f);
-                    clrscr;
-                    WriteLn('HATA: Gitmek istediginiz label bulunamadi: ', labelstr);
-                    readln;
-                    Halt;
-               end;
+               JumpToLabel(f, labelstr);
           end;
      end;
 
