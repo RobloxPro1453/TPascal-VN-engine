@@ -1,15 +1,6 @@
 Program HelloWorld;
 uses crt;
 
-type
-    Scene = record
-          CharName: string[30];
-          Text: string[255];
-    end;
-var
-   Act: array[1 .. 100] of Scene;
-   ActiveAct: Integer;
-
 const TEXT_DELAY = 15;
 
 procedure DrawBox(x1,y1,x2,y2: Integer);
@@ -114,7 +105,7 @@ begin
      Window(7, 19, 73, 23);
      GotoXY(1, 1);
 
-     for I:=0 to Length(str) do
+     for I:=1 to Length(str) do
      begin
           write(str[I]);
           Delay(TEXT_DELAY);
@@ -123,13 +114,28 @@ begin
      Window(1, 1, 80, 25);
 end;
 
-
+var
+   f: Text;
+   metin, name, filename: string;
 begin
      clrscr;
-     Act[1].CharName := 'test mesaji';
-     Act[1].Text := 'auuuu test adam';
 
-     DrawTextBox(Act[1].Text,Act[1].CharName);
+     writeln('senaryo dosyasinin ismini girin (.txt ile)');
+     readln(filename);
+
+     Assign(f, filename);
+     Reset(f);
+
+     while not EOF(f) do
+     begin
+          readln(f, name);
+          readln(f, metin);
+          clrscr;
+          DrawTextBox(metin,name);
+          readln;
+     end;
+
+     Close(f);
 
      repeat until KeyPressed;
 end.

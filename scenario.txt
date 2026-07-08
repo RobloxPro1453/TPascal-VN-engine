@@ -1,0 +1,6 @@
+test isim
+bu bir metin (test isim' in metni)
+isim2
+bu da isim2'nin konusmasi
+isim3
+isim3 de bunu dedi
