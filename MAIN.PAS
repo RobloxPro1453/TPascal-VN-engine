@@ -1,17 +1,26 @@
 Program VisualNovel;
 uses crt, VN_UI, VN_CORE, VN_MOUSE, VN_GFX;
 
+
 var
    f:Text;
-   gamename,name,text, filename, choicecountstr, labelstr, envanter, itemname: string;
-   choicecount, errcode, I, seciliindex,FareX,FareY,Tiklama :Integer;
+   placeholder,gamename,varname,varvalstr,name,text, filename, choicecountstr, labelstr, envanter, itemname: string;
+   choicecount, varval,errcode, I, seciliindex,FareX,FareY,Tiklama :Integer;
    secenekler: MenuArray;
    tus: Char;
-   Started:Boolean;
+   Started, searching:Boolean;
+
+   VariableArrayNames: array[1..20] of string;
+   VariableArrayValues: array[1..20] of Integer;
 
 begin
      clrscr;
      envanter := '';
+     for I:= 1 to 20 do
+     begin
+          VariableArrayNames[I] := '';
+          VariableArrayValues[I] := 0;
+     end;
      {writeln('senaryo dosyasini girin (.txt ile birlikte)');
      readln(filename);
      if filename = '' then Error(0,0);}
@@ -27,12 +36,12 @@ begin
      if (Pos('@NAME',gamename)=1) and (not EOF(f)) then begin
         gamename := Copy(gamename,7,16);
 
-        if FileExists('banner.bin') then begin
+        {if FileExists('banner.bin') then begin
                InitMode13h;
                DrawBanner('banner.bin');
                readln;
                CloseMode13h;
-        end;
+        end;}
 
         DrawMainMenu;
         MouseInit;
@@ -130,6 +139,47 @@ begin
                          end;
                     end;
                end;
+          end
+          else if (Pos('@SET',name)=1) and (not EOF(f)) then
+          begin
+               varname := Copy(name,5,Length(name)-5);
+               varname := Trim(varname);
+
+               I:= Pos(' ',varname);
+
+               varvalstr := Copy(varname, I+1,Length(varname)-I);
+               varvalstr := Trim(varvalstr);
+               Val(varvalstr,varval,errcode);
+
+               varname := Copy(varname, 1,I- 1);
+               varname := Trim(varname);
+
+               searching := False;
+
+               for I:=1 to 20 do
+               begin
+                    if VariableArrayNames[I] = Varname then
+                    begin
+                         VariableArrayValues[I] := varval;
+                         searching := True;
+                         Break;
+                    end;
+               end;
+               if not searching then
+               begin
+                    for I:= 1 to 20 do
+                    begin
+                         if VariableArrayNames[I] = ''  then
+                         begin
+                              VariableArrayNames[I] := varname;
+                              VariableArrayValues[I]:=varval;
+                         end;
+                    end;
+
+
+               end;
+
+
           end
           else if (Pos('@GIVE',name)=1) and (not EOF(f)) then
           begin

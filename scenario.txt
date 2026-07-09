@@ -1,5 +1,8 @@
 @NAME Ren'PAS test
 
+@SET can 100
+@SET babapro 12
+
 @LABEL 0001
 Sistem
 VN
