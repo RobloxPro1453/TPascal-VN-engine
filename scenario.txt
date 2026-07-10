@@ -1,56 +1,25 @@
-@NAME Ren'PAS test
-
-@SET can 100
-@SET babapro 12
+@NAME babapro
 
 @LABEL 0001
-Sistem
-VN
+test
+simdi 100 a ayarliyom can i
 
+@SET can 100
 
-Karakter1
-boslukda calisdi
+test
+simdi #can olan cani 10 artiriyom
 
-@CHOICE 02
-Sola git ()Elma al)
-Saga git (Yumurta al)
-@GOTO 0002
-@GOTO 0003
+@ADD can 10
 
-@LABEL 0002
-Karakter1
-Sol yoldasin Elma verildi
-@GIVE elma          
-@GOTO 0004
+test
+simdi #can olan cani 20 daha arttiriyom
+@ADD can 20
 
-@LABEL 0003
-Karakter1
-Sag yoldasin Yumurta verili
-@GIVE yumurta     
-@GOTO 0004
+test
+simdi bitti (son can = #can )
 
-@LABEL 0004
-Sistem
-Simdi @HAS kontrol
+test
+son label
 
-@HAS elma 0005
-
-Sistem
-@HAS dogrulanmadi. yumurta var
-@DROP yumurta
-@GOTO 0006
-
-@LABEL 0005
-Sistem
-@HAS dogrulandi elma var
-@DROP elma
-
-@LABEL 0006
-Sistem
-Eşya DROP
-
-Karakter1
-we did it vro
-
-Sistem
---- TEST TAMAMLANDI ---
+sistem
+--biti--

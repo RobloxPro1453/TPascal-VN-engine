@@ -1,11 +1,12 @@
 Program VisualNovel;
 uses crt, VN_UI, VN_CORE, VN_MOUSE, VN_GFX;
 
-
 var
    f:Text;
-   placeholder,gamename,varname,varvalstr,name,text, filename, choicecountstr, labelstr, envanter, itemname: string;
-   choicecount, varval,errcode, I, seciliindex,FareX,FareY,Tiklama :Integer;
+   placeholder,gamename,varname,varvalstr,name,text, filename,
+   choicecountstr, labelstr, envanter, itemname:string;
+
+   choicecount,diyezpos,spacepos, varval,errcode, I, seciliindex,FareX,FareY,Tiklama :Integer;
    secenekler: MenuArray;
    tus: Char;
    Started, searching:Boolean;
@@ -21,27 +22,16 @@ begin
           VariableArrayNames[I] := '';
           VariableArrayValues[I] := 0;
      end;
-     {writeln('senaryo dosyasini girin (.txt ile birlikte)');
-     readln(filename);
-     if filename = '' then Error(0,0);}
+
      filename := 'scenario.txt';
      Check(filename);
 
      Assign(f, filename);
      Reset(f);
 
-
-
      readln(f,gamename);
      if (Pos('@NAME',gamename)=1) and (not EOF(f)) then begin
         gamename := Copy(gamename,7,16);
-
-        {if FileExists('banner.bin') then begin
-               InitMode13h;
-               DrawBanner('banner.bin');
-               readln;
-               CloseMode13h;
-        end;}
 
         DrawMainMenu;
         MouseInit;
@@ -49,7 +39,6 @@ begin
         DrawBox(20,5,60,9);
         SetText(20,5,60,9,gamename);
      end;
-
 
      Started := False;
      repeat
@@ -64,14 +53,12 @@ begin
                    Halt;
               end;
            end;
-
      until Started = True;
 
      MouseHide;
      clrscr;
      DrawBox(1, 1, 80, 17);
      SetText(2, 2, 79, 15, '[ gorsellerin yerleri (usenmezsem 13h modunda eklerim) burda olcak ]');
-
 
      while not EOF(f) do
      begin
@@ -85,6 +72,36 @@ begin
           if (Pos('@',name)=0) and (not EOF(f)) then
           begin
                readln(f, text);
+
+               while Pos('#',text) <> 0 do
+               begin
+                    diyezpos := Pos('#',text);
+                    placeholder := Copy(text,diyezpos,Length(text)-diyezpos+1);
+
+                    spacepos := Pos(' ',placeholder);
+                    if spacepos > 0 then begin
+                       varname := Copy(placeholder,2,spacepos-2);
+                    end else begin
+                        varname := Copy(placeholder,2,Length(placeholder)-1);
+                    end;
+                    varname := Trim(varname);
+
+                    varval := 0;
+                    for I:=1 to 20 do begin
+                        if VariableArrayNames[I] = varname then begin
+                           varval := VariableArrayValues[I];
+                           Break;
+                        end;
+                    end;
+                    Str(varval,varvalstr);
+                    placeholder:=Copy(text,1,diyezpos-1);
+                    if spacepos > 0 then begin
+                       text := Concat(placeholder,varvalstr,Copy(text,diyezpos+spacepos-1,Length(text)));
+                    end else begin
+                        text := Concat(placeholder,varvalstr);
+                    end;   {calisiyosa dokunma}
+               end;
+
                DrawTextBox(text, name);
                while KeyPressed do begin ReadKey; end;
                readln;
@@ -142,23 +159,20 @@ begin
           end
           else if (Pos('@SET',name)=1) and (not EOF(f)) then
           begin
-               varname := Copy(name,5,Length(name)-5);
+               varname := Copy(name, 6, Length(name) - 5);
                varname := Trim(varname);
 
                I:= Pos(' ',varname);
-
-               varvalstr := Copy(varname, I+1,Length(varname)-I);
+               varvalstr := Copy(varname, I+1, Length(varname)-I);
                varvalstr := Trim(varvalstr);
                Val(varvalstr,varval,errcode);
-
-               varname := Copy(varname, 1,I- 1);
+               varname := Copy(varname, 1, I - 1);
                varname := Trim(varname);
 
                searching := False;
-
                for I:=1 to 20 do
                begin
-                    if VariableArrayNames[I] = Varname then
+                    if VariableArrayNames[I] = varname then
                     begin
                          VariableArrayValues[I] := varval;
                          searching := True;
@@ -169,17 +183,93 @@ begin
                begin
                     for I:= 1 to 20 do
                     begin
-                         if VariableArrayNames[I] = ''  then
+                         if VariableArrayNames[I] = '' then
                          begin
                               VariableArrayNames[I] := varname;
-                              VariableArrayValues[I]:=varval;
+                              VariableArrayValues[I] := varval;
+                              Break;
                          end;
                     end;
+               end;
+               Continue;
+          end
+          else if (Pos('@ADD',name)=1) and (not EOF(f)) then
+          begin
+               varname := Copy(name, 6, Length(name) - 5);
+               varname := Trim(varname);
+               I := Pos(' ', varname);
 
+               varvalstr := Copy(varname, I + 1, Length(varname) - I);
+               varvalstr := Trim(varvalstr);
+               Val(varvalstr, varval, errcode);
 
+               varname := Copy(varname, 1, I - 1);
+               varname := Trim(varname);
+
+               searching := False;
+
+               for I := 1 to 20 do
+               begin
+                    if VariableArrayNames[I] = varname then
+                    begin
+                         VariableArrayValues[I] := VariableArrayValues[I] + varval;
+                         searching := True;
+                         Break;
+                    end;
                end;
 
+               if not searching then
+               begin
+                    for I := 1 to 20 do
+                    begin
+                         if VariableArrayNames[I] = '' then
+                         begin
+                              VariableArrayNames[I] := varname;
+                              VariableArrayValues[I] := varval;
+                              Break;
+                         end;
+                    end;
+               end;
+               Continue;
+          end
+          else if (Pos('@SUB',name)=1) and (not EOF(f)) then
+          begin
+               varname := Copy(name, 6, Length(name) - 5);
+               varname := Trim(varname);
+               I := Pos(' ', varname);
 
+               varvalstr := Copy(varname, I + 1, Length(varname) - I);
+               varvalstr := Trim(varvalstr);
+               Val(varvalstr, varval, errcode);
+
+               varname := Copy(varname, 1, I - 1);
+               varname := Trim(varname);
+
+               searching := False;
+
+               for I := 1 to 20 do
+               begin
+                    if VariableArrayNames[I] = varname then
+                    begin
+                         VariableArrayValues[I] := VariableArrayValues[I] - varval;
+                         searching := True;
+                         Break;
+                    end;
+               end;
+
+               if not searching then
+               begin
+                    for I := 1 to 20 do
+                    begin
+                         if VariableArrayNames[I] = '' then
+                         begin
+                              VariableArrayNames[I] := varname;
+                              VariableArrayValues[I] := varval;
+                              Break;
+                         end;
+                    end;
+               end;
+               Continue;
           end
           else if (Pos('@GIVE',name)=1) and (not EOF(f)) then
           begin
